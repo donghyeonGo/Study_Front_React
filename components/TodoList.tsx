@@ -1,9 +1,10 @@
-import React from "react";
+import React, { useMemo, useCallback, useState } from "react";
 import styled from "styled-components";
 import palette from "../styles/palette";
 import { TodoType } from "../types/todo";
 import TrashCanIcon from "../public/statics/svg/trash-can.svg";
-import CheckMarkIcon from "../public/statics/svg/check-mark.svg"
+import CheckMarkIcon from "../public/statics/svg/check-mark.svg";
+import { checkTodoAPI } from "../lib/api/todo";
 
 const Container = styled.div`
     width: 100%;
@@ -122,8 +123,28 @@ interface IProps {
     todos: TodoType[];
 };
 
+
+
 const TodoList: React.FC<IProps> = ({ todos }) => {
 
+    const [localTodos, setLocalTodos] = useState(todos);
+    const checkTodo = async (id: number) => {
+        try {
+            await checkTodoAPI(id);
+            console.log("체크하였습니다.");
+
+            const newTodos = localTodos.map((todo) => {
+                if (todo.id === id) {
+                    return { ...todo, checked: !todo.checked };
+                }
+                return todo;
+            });
+            setLocalTodos(newTodos);
+
+        } catch (e) {
+            console.log(e);
+        }
+    };
     const getTodoColorNums = () => {
         let red = 0;
         let orange = 0;
@@ -173,7 +194,7 @@ const TodoList: React.FC<IProps> = ({ todos }) => {
         <Container>
             <div className="todo-list-header">
                 <p className="todo-list-last-todo">
-                    남은 TODO<span>{todos.length}개</span>
+                    남은 TODO<span>{localTodos.length}개</span>
                 </p>
                 <div className="todo-list-header-colors">
                     {Object.keys(todoColorNum).map((color, index) => (
@@ -185,7 +206,7 @@ const TodoList: React.FC<IProps> = ({ todos }) => {
                 </div>
             </div>
             <ul className="todo-list">
-                {todos.map((todo) => (
+                {localTodos.map((todo) => (
                     <li className="todo-item" key={todo.id}>
                         <div className="todo-left-side">
                             <div className={`todo-color-block bg-${todo.color}`} />
@@ -197,11 +218,11 @@ const TodoList: React.FC<IProps> = ({ todos }) => {
                             {todo.checked && (
                                 <>
                                     <TrashCanIcon className="todo-trash-can" onClick={() => { }} />
-                                    <CheckMarkIcon className="todo-check-mark" onClick={() => { }} />
+                                    <CheckMarkIcon className="todo-check-mark" onClick={() => { checkTodo(todo.id) }} />
                                 </>
                             )}
                             {!todo.checked && (
-                                <button type="button" className="todo-button" onClick={() => { }} />
+                                <button type="button" className="todo-button" onClick={() => { checkTodo(todo.id) }} />
                             )}
                         </div>
                     </li>
