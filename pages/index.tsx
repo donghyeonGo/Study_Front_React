@@ -4,14 +4,14 @@ import TodoList from "../components/TodoList";
 import { TodoType } from "../types/todo";
 import { getTodosAPI } from "../lib/api/todo";
 import { wrapper } from "../store";
+import { todoActions } from "../store/todo";
 
 interface IProps {
     todos: TodoType[];
 }
 
-const app: NextPage<IProps> = ({ todos }) => {
-    console.log(todos);
-    return <TodoList todos={todos} />;
+const app: NextPage<IProps> = () => {
+    return <TodoList todos={[]} />;
 };
 
 export const getServerSideProps = wrapper.getServerSideProps((store) =>
@@ -19,10 +19,11 @@ export const getServerSideProps = wrapper.getServerSideProps((store) =>
         console.log("store: ", store);
         try {
             const { data } = await getTodosAPI();
-            return { props: { todos: data } };
+            store.dispatch(todoActions.setTodo(data));
+            return { props: {} };
         } catch (e) {
             console.log(e);
-            return { props: { todos: [] } }
+            return { props: {} }
         }
     }
 );

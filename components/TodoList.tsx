@@ -5,6 +5,9 @@ import { TodoType } from "../types/todo";
 import TrashCanIcon from "../public/statics/svg/trash-can.svg";
 import CheckMarkIcon from "../public/statics/svg/check-mark.svg";
 import { checkTodoAPI, deleteTodoAPI } from "../lib/api/todo";
+import { useSelector } from "../store";
+import { todoActions } from "../store/todo";
+import { useDispatch } from "react-redux";
 
 const Container = styled.div`
     width: 100%;
@@ -125,12 +128,15 @@ interface IProps {
 
 
 
-const TodoList: React.FC<IProps> = ({ todos }) => {
+const TodoList: React.FC<IProps> = () => {
+    const todos = useSelector((state) => state.todo.todos);
+    const dispatch = useDispatch();
 
     const deleteTodo = async (id: number) => {
         try {
             await deleteTodoAPI(id);
-            const newTodos = localTodos.filter((todo) => todo.id !== id);
+            const newTodos = todos.filter((todo) => todo.id !== id);
+            dispatch(todoActions.setTodo(newTodos));
             setLocalTodos(newTodos);
             console.log("삭제했습니다.");
         } catch (e) {
@@ -143,13 +149,14 @@ const TodoList: React.FC<IProps> = ({ todos }) => {
         try {
             await checkTodoAPI(id);
             console.log("체크하였습니다.");
-
-            const newTodos = localTodos.map((todo) => {
+            const newTodos = todos.map((todo) => {
                 if (todo.id === id) {
                     return { ...todo, checked: !todo.checked };
                 }
                 return todo;
             });
+            dispatch(todoActions.setTodo(newTodos));
+            console.log("체크하였습니다.");
             setLocalTodos(newTodos);
 
         } catch (e) {
